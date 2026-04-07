@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "3D Smart Job Portal"
+version = "1.0.0"
+id = "artifacts/job-portal"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19143
+
+[services.development]
+run = "pnpm --filter @workspace/job-portal run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/job-portal", "run", "build" ]
+publicDir = "artifacts/job-portal/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19143"
+BASE_PATH = "/"
