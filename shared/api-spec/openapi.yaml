@@ -1,0 +1,947 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: 3D Smart Job Portal with ATS Resume Analyzer API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: jobs
+    description: Job posting operations
+  - name: applications
+    description: Job application operations
+  - name: resumes
+    description: Resume management operations
+  - name: ats
+    description: ATS analysis operations
+  - name: dashboard
+    description: Dashboard summary operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /auth/register:
+    post:
+      operationId: registerUser
+      tags: [auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterBody"
+      responses:
+        "201":
+          description: User registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      operationId: loginUser
+      tags: [auth]
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginBody"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/me:
+    get:
+      operationId: getCurrentUser
+      tags: [auth]
+      summary: Get current user profile
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /jobs:
+    get:
+      operationId: listJobs
+      tags: [jobs]
+      summary: List all jobs
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: location
+          in: query
+          schema:
+            type: string
+        - name: type
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of jobs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Job"
+    post:
+      operationId: createJob
+      tags: [jobs]
+      summary: Create a new job posting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateJobBody"
+      responses:
+        "201":
+          description: Job created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Job"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /jobs/{id}:
+    get:
+      operationId: getJob
+      tags: [jobs]
+      summary: Get job by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Job details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Job"
+        "404":
+          description: Job not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateJob
+      tags: [jobs]
+      summary: Update a job posting
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateJobBody"
+      responses:
+        "200":
+          description: Job updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Job"
+        "404":
+          description: Job not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteJob
+      tags: [jobs]
+      summary: Delete a job posting
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Job deleted
+        "404":
+          description: Job not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /applications:
+    get:
+      operationId: listApplications
+      tags: [applications]
+      summary: List applications (filtered by user or job)
+      parameters:
+        - name: jobId
+          in: query
+          schema:
+            type: string
+        - name: userId
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of applications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Application"
+    post:
+      operationId: createApplication
+      tags: [applications]
+      summary: Apply for a job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateApplicationBody"
+      responses:
+        "201":
+          description: Application submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /applications/{id}:
+    get:
+      operationId: getApplication
+      tags: [applications]
+      summary: Get application by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Application details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateApplicationStatus
+      tags: [applications]
+      summary: Update application status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateApplicationStatusBody"
+      responses:
+        "200":
+          description: Status updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /resumes:
+    get:
+      operationId: listResumes
+      tags: [resumes]
+      summary: List resumes for current user
+      responses:
+        "200":
+          description: List of resumes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Resume"
+    post:
+      operationId: uploadResume
+      tags: [resumes]
+      summary: Upload a resume (text content)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadResumeBody"
+      responses:
+        "201":
+          description: Resume uploaded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Resume"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /resumes/{id}:
+    get:
+      operationId: getResume
+      tags: [resumes]
+      summary: Get resume by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Resume details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Resume"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /ats/analyze:
+    post:
+      operationId: analyzeResume
+      tags: [ats]
+      summary: Analyze resume against a job description
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnalyzeResumeBody"
+      responses:
+        "200":
+          description: ATS analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AtsScore"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /ats/scores:
+    get:
+      operationId: listAtsScores
+      tags: [ats]
+      summary: List ATS scores for a resume
+      parameters:
+        - name: resumeId
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of ATS scores
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AtsScore"
+
+  /ats/scores/{id}:
+    get:
+      operationId: getAtsScore
+      tags: [ats]
+      summary: Get ATS score by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ATS score details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AtsScore"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /dashboard/seeker:
+    get:
+      operationId: getSeekerDashboard
+      tags: [dashboard]
+      summary: Get job seeker dashboard summary
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SeekerDashboard"
+
+  /dashboard/recruiter:
+    get:
+      operationId: getRecruiterDashboard
+      tags: [dashboard]
+      summary: Get recruiter dashboard summary
+      responses:
+        "200":
+          description: Recruiter dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecruiterDashboard"
+
+  /dashboard/stats:
+    get:
+      operationId: getPlatformStats
+      tags: [dashboard]
+      summary: Get overall platform statistics
+      responses:
+        "200":
+          description: Platform statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlatformStats"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [job_seeker, recruiter, admin]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - email
+        - role
+        - createdAt
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+      required:
+        - token
+        - user
+
+    RegisterBody:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        role:
+          type: string
+          enum: [job_seeker, recruiter]
+      required:
+        - name
+        - email
+        - password
+        - role
+
+    LoginBody:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - email
+        - password
+
+    Job:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        company:
+          type: string
+        description:
+          type: string
+        skills:
+          type: array
+          items:
+            type: string
+        location:
+          type: string
+        type:
+          type: string
+          enum: [full_time, part_time, contract, remote]
+        salaryMin:
+          type: ["integer", "null"]
+        salaryMax:
+          type: ["integer", "null"]
+        recruiterId:
+          type: string
+        recruiterName:
+          type: ["string", "null"]
+        applicationCount:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - company
+        - description
+        - skills
+        - location
+        - type
+        - salaryMin
+        - salaryMax
+        - recruiterId
+        - recruiterName
+        - applicationCount
+        - createdAt
+        - updatedAt
+
+    CreateJobBody:
+      type: object
+      properties:
+        title:
+          type: string
+        company:
+          type: string
+        description:
+          type: string
+        skills:
+          type: array
+          items:
+            type: string
+        location:
+          type: string
+        type:
+          type: string
+          enum: [full_time, part_time, contract, remote]
+        salaryMin:
+          type: ["integer", "null"]
+        salaryMax:
+          type: ["integer", "null"]
+      required:
+        - title
+        - company
+        - description
+        - skills
+        - location
+        - type
+
+    UpdateJobBody:
+      type: object
+      properties:
+        title:
+          type: string
+        company:
+          type: string
+        description:
+          type: string
+        skills:
+          type: array
+          items:
+            type: string
+        location:
+          type: string
+        type:
+          type: string
+          enum: [full_time, part_time, contract, remote]
+        salaryMin:
+          type: ["integer", "null"]
+        salaryMax:
+          type: ["integer", "null"]
+
+    Application:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        jobId:
+          type: string
+        status:
+          type: string
+          enum: [pending, reviewing, shortlisted, rejected, accepted]
+        coverLetter:
+          type: ["string", "null"]
+        atsScore:
+          type: ["number", "null"]
+        jobTitle:
+          type: ["string", "null"]
+        company:
+          type: ["string", "null"]
+        applicantName:
+          type: ["string", "null"]
+        applicantEmail:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - jobId
+        - status
+        - coverLetter
+        - atsScore
+        - jobTitle
+        - company
+        - applicantName
+        - applicantEmail
+        - createdAt
+        - updatedAt
+
+    CreateApplicationBody:
+      type: object
+      properties:
+        jobId:
+          type: string
+        coverLetter:
+          type: string
+        resumeId:
+          type: ["string", "null"]
+      required:
+        - jobId
+
+    UpdateApplicationStatusBody:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [pending, reviewing, shortlisted, rejected, accepted]
+      required:
+        - status
+
+    Resume:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        fileName:
+          type: string
+        extractedText:
+          type: string
+        skills:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - fileName
+        - extractedText
+        - skills
+        - createdAt
+
+    UploadResumeBody:
+      type: object
+      properties:
+        fileName:
+          type: string
+        extractedText:
+          type: string
+        skills:
+          type: array
+          items:
+            type: string
+      required:
+        - fileName
+        - extractedText
+        - skills
+
+    AtsScore:
+      type: object
+      properties:
+        id:
+          type: string
+        resumeId:
+          type: string
+        jobId:
+          type: ["string", "null"]
+        score:
+          type: number
+        matchedKeywords:
+          type: array
+          items:
+            type: string
+        missingKeywords:
+          type: array
+          items:
+            type: string
+        totalKeywords:
+          type: string
+        jobTitle:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - resumeId
+        - jobId
+        - score
+        - matchedKeywords
+        - missingKeywords
+        - totalKeywords
+        - jobTitle
+        - createdAt
+
+    AnalyzeResumeBody:
+      type: object
+      properties:
+        resumeId:
+          type: string
+        jobId:
+          type: ["string", "null"]
+        jobDescription:
+          type: string
+        jobTitle:
+          type: string
+      required:
+        - resumeId
+        - jobDescription
+        - jobTitle
+
+    SeekerDashboard:
+      type: object
+      properties:
+        totalApplications:
+          type: string
+        pendingApplications:
+          type: string
+        shortlisted:
+          type: string
+        rejected:
+          type: string
+        accepted:
+          type: string
+        avgAtsScore:
+          type: number
+        recentApplications:
+          type: array
+          items:
+            $ref: "#/components/schemas/Application"
+        topAtsScores:
+          type: array
+          items:
+            $ref: "#/components/schemas/AtsScore"
+      required:
+        - totalApplications
+        - pendingApplications
+        - shortlisted
+        - rejected
+        - accepted
+        - avgAtsScore
+        - recentApplications
+        - topAtsScores
+
+    RecruiterDashboard:
+      type: object
+      properties:
+        totalJobs:
+          type: string
+        activeJobs:
+          type: string
+        totalApplications:
+          type: string
+        pendingReview:
+          type: string
+        shortlisted:
+          type: string
+        recentApplications:
+          type: array
+          items:
+            $ref: "#/components/schemas/Application"
+        jobsWithCounts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Job"
+      required:
+        - totalJobs
+        - activeJobs
+        - totalApplications
+        - pendingReview
+        - shortlisted
+        - recentApplications
+        - jobsWithCounts
+
+    PlatformStats:
+      type: object
+      properties:
+        totalJobs:
+          type: string
+        totalUsers:
+          type: string
+        totalApplications:
+          type: string
+        totalResumes:
+          type: string
+        avgAtsScore:
+          type: number
+        jobsByType:
+          type: object
+          properties:
+            full_time:
+              type: string
+            part_time:
+              type: string
+            contract:
+              type: string
+            remote:
+              type: string
+          required:
+            - full_time
+            - part_time
+            - contract
+            - remote
+      required:
+        - totalJobs
+        - totalUsers
+        - totalApplications
+        - totalResumes
+        - avgAtsScore
+        - jobsByType
