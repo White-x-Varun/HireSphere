@@ -8,7 +8,7 @@ import {
 } from "@workspace/api-client-react";
 import { customFetch } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
-import { ArrowLeft, Send, FileText, Loader2, CheckCircle } from "lucide-react";
+import { ArrowLeft, Send, FileText, Loader2, CheckCircle, Zap } from "lucide-react";
 import { Link } from "wouter";
 
 export default function Apply() {
@@ -18,6 +18,7 @@ export default function Apply() {
   const [selectedResumeId, setSelectedResumeId] = useState<string | null>(null);
   const [coverLetter, setCoverLetter] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [isGeneratingCL, setIsGeneratingCL] = useState(false);
 
   const { data: job } = useGetJob(jobId, {
     query: {
@@ -52,6 +53,29 @@ export default function Apply() {
         resumeId: selectedResumeId,
       },
     } as any);
+  };
+
+  const handleGenerateCL = async () => {
+    if (!selectedResumeId) {
+      alert("Please select a resume first");
+      return;
+    }
+    setIsGeneratingCL(true);
+    try {
+      const res = await customFetch("/api/ai/cover-letter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resumeId: selectedResumeId, jobId }),
+      });
+      if (!res.ok) throw new Error("Failed to generate cover letter");
+      const data = await res.json();
+      setCoverLetter(data.coverLetter);
+    } catch (err) {
+      console.error(err);
+      alert("Error generating cover letter. Please try again.");
+    } finally {
+      setIsGeneratingCL(false);
+    }
   };
 
   if (submitted) {
@@ -138,7 +162,18 @@ export default function Apply() {
 
             {/* Cover Letter */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Cover Letter (optional)</label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-gray-300">Cover Letter (optional)</label>
+                <button 
+                  type="button" 
+                  onClick={handleGenerateCL}
+                  disabled={isGeneratingCL || !selectedResumeId}
+                  className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 disabled:opacity-50 transition-colors border border-cyan-500/20"
+                >
+                  {isGeneratingCL ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />}
+                  AI Generate
+                </button>
+              </div>
               <textarea value={coverLetter} onChange={(e) => setCoverLetter(e.target.value)}
                 placeholder="Tell the recruiter why you're the perfect fit for this role..."
                 rows={6}

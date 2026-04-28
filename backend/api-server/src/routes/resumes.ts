@@ -38,6 +38,20 @@ router.get("/resumes/:id", requireAuth, async (req, res): Promise<void> => {
   res.json({ id: resume.id, ...resume.toObject() });
 });
 
+router.delete("/resumes/:id", requireAuth, async (req, res): Promise<void> => {
+  const params = GetResumeParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  const resume = await Resume.findOneAndDelete({ _id: params.data.id, userId: req.user!.id });
+  if (!resume) {
+    res.status(404).json({ error: "Resume not found or unauthorized" });
+    return;
+  }
+  res.status(200).json({ message: "Resume deleted successfully" });
+});
+
 router.post("/resumes/extract", requireAuth, upload.single("file"), async (req, res): Promise<void> => {
   if (!req.file) {
     console.error("Extraction error: No file uploaded");

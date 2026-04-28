@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
-import { Users, Briefcase, FileCheck, TrendingUp, ShieldAlert, Settings, Loader2 } from "lucide-react";
+import { Users, Briefcase, FileCheck, TrendingUp, ShieldAlert, Settings, Loader2, Trash2 } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
@@ -13,6 +13,23 @@ const AdminDashboard: React.FC = () => {
     queryKey: ["/api/dashboard/stats"],
     queryFn: () => apiRequest("/api/dashboard/stats"),
   });
+
+  const { data: users, refetch: refetchUsers } = useQuery({
+    queryKey: ["/api/admin/users"],
+    queryFn: () => apiRequest("/api/admin/users"),
+  });
+
+  const handleDeleteUser = async (userId: string) => {
+    if (confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
+      try {
+        await apiRequest(`/api/admin/users/${userId}`, { method: "DELETE" });
+        refetchUsers();
+      } catch (err) {
+        console.error(err);
+        alert("Failed to delete user");
+      }
+    }
+  };
 
   if (isLoading) {
     return (
@@ -47,7 +64,7 @@ const AdminDashboard: React.FC = () => {
           <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/20 py-1 px-3">
             System Healthy
           </Badge>
-          <button className="p-2 rounded-lg glass-strong text-gray-400 hover:text-white transition-all">
+          <button onClick={() => alert("Settings modal coming soon!")} className="p-2 rounded-lg glass-strong text-gray-400 hover:text-white transition-all">
             <Settings size={20} />
           </button>
         </div>
@@ -141,16 +158,58 @@ const AdminDashboard: React.FC = () => {
         </Card>
       </div>
 
-      {/* Recently Active Users (Simulated for Demo) */}
+      {/* User Management Table */}
       <Card className="border-none shadow-2xl bg-background/50 backdrop-blur-xl">
         <CardHeader>
-          <CardTitle className="text-lg">Platform Activity Overview</CardTitle>
+          <CardTitle className="text-lg">User Management</CardTitle>
         </CardHeader>
-        <CardContent className="p-12 text-center text-gray-500">
-          <div className="flex flex-col items-center gap-4">
-            <TrendingUp size={48} className="text-cyan-400/20" />
-            <p>User-specific management and detailed logs are coming in the next platform update.</p>
-          </div>
+        <CardContent>
+          <Table>
+            <TableHeader className="bg-white/5">
+              <TableRow className="border-white/10 hover:bg-transparent">
+                <TableHead className="text-gray-300">Name</TableHead>
+                <TableHead className="text-gray-300">Email</TableHead>
+                <TableHead className="text-gray-300">Role</TableHead>
+                <TableHead className="text-gray-300 text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {users && users.length > 0 ? (
+                users.map((u: any) => (
+                  <TableRow key={u.id} className="border-white/10 hover:bg-white/5 transition-all">
+                    <TableCell className="font-medium text-white">{u.name}</TableCell>
+                    <TableCell className="text-gray-400">{u.email}</TableCell>
+                    <TableCell>
+                      <Badge className={
+                        u.role === "admin" ? "bg-purple-500/20 text-purple-400 border-purple-500/30" :
+                        u.role === "recruiter" ? "bg-cyan-500/20 text-cyan-400 border-cyan-500/30" :
+                        "bg-green-500/20 text-green-400 border-green-500/30"
+                      }>
+                        {u.role.toUpperCase()}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {u.role !== "admin" && (
+                        <button
+                          onClick={() => handleDeleteUser(u.id)}
+                          className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                          title="Delete User"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center py-8 text-gray-500">
+                    No users found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>

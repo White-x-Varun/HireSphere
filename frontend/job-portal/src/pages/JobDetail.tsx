@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Link, useParams } from "wouter";
 import { useGetJob, getGetJobQueryKey } from "@workspace/api-client-react";
 import { customFetch } from "@/lib/api";
-import { MapPin, DollarSign, Clock, Users, ArrowLeft, Loader2, Building } from "lucide-react";
+import { MapPin, IndianRupee, Clock, Users, ArrowLeft, Loader2, Building } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const typeLabels: Record<string, string> = {
@@ -102,9 +102,9 @@ export default function JobDetail() {
             </span>
             {(job.salaryMin || job.salaryMax) && (
               <span className="flex items-center gap-1.5">
-                <DollarSign size={14} className="text-emerald-400" />
-                {job.salaryMin ? `$${(job.salaryMin / 1000).toFixed(0)}k` : ""}
-                {job.salaryMax ? ` – $${(job.salaryMax / 1000).toFixed(0)}k` : ""}
+                <IndianRupee size={14} className="text-emerald-400" />
+                {job.salaryMin ? `${(job.salaryMin / 100000).toFixed(1)}L` : ""}
+                {job.salaryMax ? ` – ${(job.salaryMax / 100000).toFixed(1)}L` : ""}
               </span>
             )}
             <span className="flex items-center gap-1.5">

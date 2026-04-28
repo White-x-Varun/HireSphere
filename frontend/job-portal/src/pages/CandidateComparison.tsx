@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { CheckCircle, XCircle, Clock, Calendar, Loader2 } from "lucide-react";
 import { apiRequest } from "@/lib/api";
 
@@ -14,6 +16,10 @@ const CandidateComparison: React.FC = () => {
   const [, params] = useRoute("/recruiter/compare/:jobId");
   const jobId = params?.jobId;
   const queryClient = useQueryClient();
+  const [scheduleApplicantId, setScheduleApplicantId] = React.useState<string | null>(null);
+  const [scheduleDate, setScheduleDate] = React.useState("");
+  const [scheduleTime, setScheduleTime] = React.useState("");
+  const [isScheduling, setIsScheduling] = React.useState(false);
 
   const { data: applicants, isLoading } = useQuery({
     queryKey: [`/api/applications?jobId=${jobId}`],
@@ -39,6 +45,32 @@ const CandidateComparison: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: [`/api/applications?jobId=${jobId}`] });
     } catch (err) {
       console.error("Failed to update status", err);
+    }
+  };
+
+  const handleSchedule = async () => {
+    if (!scheduleApplicantId || !scheduleDate || !scheduleTime) return;
+    setIsScheduling(true);
+    try {
+      const applicant = applicants?.find((a: any) => a.id === scheduleApplicantId);
+      const scheduledAt = new Date(`${scheduleDate}T${scheduleTime}`).toISOString();
+      await apiRequest("/api/interviews", {
+        method: "POST",
+        body: JSON.stringify({
+          applicationId: applicant.id,
+          candidateId: applicant.userId,
+          scheduledAt,
+          type: "video",
+          meetingLink: "https://meet.google.com/xyz-demo",
+        }),
+      });
+      alert("Interview scheduled successfully!");
+      setScheduleApplicantId(null);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to schedule interview.");
+    } finally {
+      setIsScheduling(false);
     }
   };
 
@@ -107,7 +139,13 @@ const CandidateComparison: React.FC = () => {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Button size="icon" variant="ghost" className="h-8 w-8 text-cyan-400 hover:bg-cyan-400/10" title="Schedule Interview">
+                      <Button 
+                        size="icon" 
+                        variant="ghost" 
+                        className="h-8 w-8 text-cyan-400 hover:bg-cyan-400/10" 
+                        title="Schedule Interview"
+                        onClick={() => setScheduleApplicantId(applicant.id)}
+                      >
                         <Calendar className="h-4 w-4" />
                       </Button>
                       <Button 
@@ -143,6 +181,33 @@ const CandidateComparison: React.FC = () => {
           </Table>
         </CardContent>
       </Card>
+
+      <Dialog open={!!scheduleApplicantId} onOpenChange={(open) => !open && setScheduleApplicantId(null)}>
+        <DialogContent className="glass-strong border-white/10 text-white">
+          <DialogHeader>
+            <DialogTitle>Schedule Interview</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Select a date and time to schedule an interview with this candidate.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Date</label>
+              <Input type="date" value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)} className="bg-white/5 border-white/10" />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Time</label>
+              <Input type="time" value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)} className="bg-white/5 border-white/10" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" className="glass" onClick={() => setScheduleApplicantId(null)}>Cancel</Button>
+            <Button onClick={handleSchedule} disabled={isScheduling || !scheduleDate || !scheduleTime} className="bg-cyan-500 hover:bg-cyan-600 text-black">
+              {isScheduling ? "Scheduling..." : "Confirm"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

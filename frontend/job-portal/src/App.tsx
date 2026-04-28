@@ -40,29 +40,34 @@ import { useAuth } from "@/contexts/AuthContext";
 
 function Router() {
   const { isLoading } = useAuth();
+  const [location] = useLocation();
 
   if (isLoading) return <LoadingScreen />;
+
+  const isLanding = location === "/";
 
   return (
     <>
       <Navbar />
-      <Switch>
-        <Route path="/" component={Landing} />
-        <Route path="/login" component={Login} />
-        <Route path="/register" component={Register} />
-        <Route path="/jobs" component={Jobs} />
-        <Route path="/jobs/:id" component={JobDetail} />
-        <Route path="/seeker" component={SeekerDashboard} />
-        <Route path="/recruiter" component={RecruiterDashboard} />
-        <Route path="/recruiter/compare/:jobId" component={CandidateComparison} />
-        <Route path="/recruiter/scheduler" component={Scheduler} />
-        <Route path="/admin" component={AdminDashboard} />
-        <Route path="/resume" component={Resumes} />
-        <Route path="/ats" component={AtsAnalyzer} />
-        <Route path="/apply/:jobId" component={Apply} />
-        <Route path="/chat" component={Chat} />
-        <Route component={NotFound} />
-      </Switch>
+      <main className={isLanding ? "" : "pt-24 pb-8 min-h-[calc(100vh-4rem)]"}>
+        <Switch>
+          <Route path="/" component={Landing} />
+          <Route path="/login" component={Login} />
+          <Route path="/register" component={Register} />
+          <Route path="/jobs" component={Jobs} />
+          <Route path="/jobs/:id" component={JobDetail} />
+          <Route path="/seeker" component={SeekerDashboard} />
+          <Route path="/recruiter" component={RecruiterDashboard} />
+          <Route path="/recruiter/compare/:jobId" component={CandidateComparison} />
+          <Route path="/recruiter/scheduler" component={Scheduler} />
+          <Route path="/admin" component={AdminDashboard} />
+          <Route path="/resume" component={Resumes} />
+          <Route path="/ats" component={AtsAnalyzer} />
+          <Route path="/apply/:jobId" component={Apply} />
+          <Route path="/chat" component={Chat} />
+          <Route component={NotFound} />
+        </Switch>
+      </main>
     </>
   );
 }

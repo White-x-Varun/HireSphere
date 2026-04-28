@@ -9,6 +9,7 @@ import dashboardRouter from "./dashboard";
 import aiRouter from "./ai";
 import communicationRouter from "./communication";
 import interviewsRouter from "./interviews";
+import adminRouter from "./admin";
 
 const router: IRouter = Router();
 
@@ -22,5 +23,6 @@ router.use(dashboardRouter);
 router.use(aiRouter);
 router.use(communicationRouter);
 router.use(interviewsRouter);
+router.use(adminRouter);
 
 export default router;

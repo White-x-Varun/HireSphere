@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { refineResume, generateCoverLetter, matchJobs } from "../lib/ai";
-import { authenticate } from "../middleware/auth"; // Need to check if this exists
+import { requireAuth } from "../middlewares/auth";
 import { logger } from "../lib/logger";
 
 const router = Router();
@@ -20,11 +20,28 @@ router.post("/ai/refine", async (req, res) => {
   }
 });
 
-router.post("/ai/cover-letter", async (req, res) => {
+import { Resume, Job } from "@workspace/db";
+
+router.post("/ai/cover-letter", requireAuth, async (req, res): Promise<void> => {
   try {
-    const { resumeText, jobDescription } = req.body;
+    const { resumeId, jobId, resumeText: rawResumeText, jobDescription: rawJobDescription } = req.body;
+    
+    let resumeText = rawResumeText;
+    let jobDescription = rawJobDescription;
+
+    if (resumeId) {
+      const resume = await Resume.findById(resumeId);
+      if (resume) resumeText = resume.extractedText;
+    }
+    
+    if (jobId) {
+      const job = await Job.findById(jobId);
+      if (job) jobDescription = job.description;
+    }
+
     if (!resumeText || !jobDescription) {
-      return res.status(400).json({ error: "Missing required fields" });
+      res.status(400).json({ error: "Missing required fields or invalid IDs" });
+      return;
     }
 
     const result = await generateCoverLetter(resumeText, jobDescription);

@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { Application, Job, User } from "@workspace/db";
+import { Application, Job, User, Resume } from "@workspace/db";
 import {
   CreateApplicationBody,
   UpdateApplicationStatusBody,
@@ -8,6 +8,7 @@ import {
   ListApplicationsQueryParams,
 } from "@workspace/api-zod";
 import { requireAuth } from "../middlewares/auth";
+import { refineResume } from "../lib/ai";
 
 const router: IRouter = Router();
 
@@ -60,11 +61,26 @@ router.post("/applications", requireAuth, async (req, res): Promise<void> => {
     return;
   }
 
+  let atsScore = null;
+  if (parsed.data.resumeId) {
+    try {
+      const resume = await Resume.findById(parsed.data.resumeId);
+      const job = await Job.findById(parsed.data.jobId);
+      if (resume && job) {
+        const aiResult = await refineResume(resume.extractedText, job.description);
+        atsScore = aiResult.score;
+      }
+    } catch (err) {
+      console.error("Failed to calculate ATS score on application:", err);
+    }
+  }
+
   const app = await Application.create({
     userId: req.user!.id,
     jobId: parsed.data.jobId,
     coverLetter: parsed.data.coverLetter || null,
     resumeId: parsed.data.resumeId || null,
+    atsScore: atsScore,
   });
 
   const job = await Job.findById(app.jobId).select("title company");
@@ -76,7 +92,7 @@ router.post("/applications", requireAuth, async (req, res): Promise<void> => {
     jobId: app.jobId.toString(),
     status: app.status,
     coverLetter: app.coverLetter || null,
-    atsScore: null,
+    atsScore: atsScore,
     jobTitle: job?.title || null,
     company: job?.company || null,
     applicantName: user?.name || null,

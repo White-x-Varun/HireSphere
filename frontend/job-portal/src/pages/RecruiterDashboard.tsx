@@ -11,7 +11,7 @@ import {
 import { customFetch } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
-import { Loader2, Briefcase, Users, Plus, X, CheckCircle, XCircle, Clock, Target } from "lucide-react";
+import { Loader2, Briefcase, Users, Plus, X, CheckCircle, XCircle, Clock, Target, Trash2 } from "lucide-react";
 
 const JOB_TYPES = ["full_time", "part_time", "contract", "remote"];
 const TYPE_LABELS: Record<string, string> = {
@@ -84,6 +84,18 @@ export default function RecruiterDashboard() {
     } as any);
   };
 
+  const handleDeleteJob = async (jobId: string) => {
+    if (confirm("Are you sure you want to delete this job and all its applications?")) {
+      try {
+        await customFetch(`/api/jobs/${jobId}`, { method: "DELETE" });
+        refetch();
+      } catch (err) {
+        console.error(err);
+        alert("Failed to delete job");
+      }
+    }
+  };
+
   const stats = [
     { label: "Total Jobs", value: dashboard?.totalJobs ?? 0, color: "text-cyan-400" },
     { label: "Total Applications", value: dashboard?.totalApplications ?? 0, color: "text-purple-400" },
@@ -137,10 +149,12 @@ export default function RecruiterDashboard() {
             {dashboard?.jobsWithCounts && dashboard.jobsWithCounts.length > 0 ? (
               <div className="space-y-3">
                 {dashboard.jobsWithCounts.map((job) => (
-                  <Link key={job.id} href={`/jobs/${job.id}`}>
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-white/3 border border-white/5 hover:border-cyan-500/20 cursor-pointer transition-colors">
+                  <div key={job.id} className="p-3 rounded-xl bg-white/3 border border-white/5 hover:border-cyan-500/20 transition-colors">
+                    <div className="flex items-center justify-between mb-3">
                       <div>
-                        <div className="text-sm text-white font-medium">{job.title}</div>
+                        <Link href={`/jobs/${job.id}`}>
+                          <div className="text-sm text-white font-medium hover:text-cyan-400 cursor-pointer transition-colors">{job.title}</div>
+                        </Link>
                         <div className="text-xs text-gray-500">{job.company} · {TYPE_LABELS[job.type]}</div>
                       </div>
                       <div className="flex items-center gap-1.5 text-xs text-purple-400">
@@ -148,7 +162,17 @@ export default function RecruiterDashboard() {
                         {job.applicationCount}
                       </div>
                     </div>
-                  </Link>
+                    <div className="flex gap-2">
+                      <Link href={`/recruiter/compare/${job.id}`} className="flex-1">
+                        <button className="w-full py-1.5 rounded-lg bg-white/5 hover:bg-cyan-500/10 text-cyan-400 text-xs font-medium transition-colors border border-white/5 hover:border-cyan-500/30">
+                          Manage Candidates
+                        </button>
+                      </Link>
+                      <button onClick={() => handleDeleteJob(job.id)} className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-red-500/10 text-red-400 transition-colors border border-white/5 hover:border-red-500/30 flex items-center justify-center">
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
                 ))}
               </div>
             ) : (

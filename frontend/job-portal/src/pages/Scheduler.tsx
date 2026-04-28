@@ -7,9 +7,11 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Clock, Video, MapPin, ChevronRight, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Scheduler: React.FC = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const { user } = useAuth();
 
   const { data: interviews, isLoading } = useQuery({
     queryKey: ["/api/interviews"],
@@ -56,7 +58,6 @@ const Scheduler: React.FC = () => {
           <Card className="border-none shadow-2xl bg-background/50 backdrop-blur-xl">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Interviews for {date?.toDateString()}</CardTitle>
-              <Button size="sm" className="bg-cyan-500 hover:bg-cyan-600 text-black">Add Slot</Button>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -68,8 +69,14 @@ const Scheduler: React.FC = () => {
                         <span className="text-sm">{new Date(interview.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }).split(' ')[0]}</span>
                       </div>
                       <div>
-                        <p className="font-semibold text-white">{(interview.candidateId as any).name}</p>
-                        <p className="text-xs text-gray-400">{(interview.applicationId as any)?.jobTitle || "Candidate"}</p>
+                        <p className="font-semibold text-white">
+                          {user?.role === "recruiter" 
+                            ? (interview.candidateId as any)?.name 
+                            : (interview.recruiterId as any)?.name}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          {(interview.applicationId as any)?.jobId?.title || "Candidate"}
+                        </p>
                       </div>
                     </div>
                     

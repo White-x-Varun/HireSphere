@@ -28,7 +28,10 @@ router.get("/messages/:userId", async (req, res) => {
         { senderId: req.params.userId },
         { receiverId: req.params.userId }
       ]
-    }).sort({ createdAt: 1 });
+    })
+      .populate("senderId", "name email role")
+      .populate("receiverId", "name email role")
+      .sort({ createdAt: 1 });
     res.json(messages);
   } catch (error) {
     logger.error({ error }, "Get Messages Error");

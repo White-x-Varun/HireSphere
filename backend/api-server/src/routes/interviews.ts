@@ -49,7 +49,13 @@ router.get("/interviews", requireAuth, async (req, res) => {
     const interviews = await Interview.find(query)
       .populate("candidateId", "name email")
       .populate("recruiterId", "name email")
-      .populate("applicationId")
+      .populate({
+        path: "applicationId",
+        populate: {
+          path: "jobId",
+          select: "title company"
+        }
+      })
       .sort({ scheduledAt: 1 });
 
     res.json(interviews);

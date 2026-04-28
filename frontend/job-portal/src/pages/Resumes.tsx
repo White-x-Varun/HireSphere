@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useListResumes, getListResumesQueryKey, useUploadResume } from "@workspace/api-client-react";
-import { customFetch } from "@/lib/api";
+import { customFetch, getToken } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { Loader2, FileText, Plus, X, CheckCircle, Upload, FileUp, Zap } from "lucide-react";
+import { Loader2, FileText, Plus, X, CheckCircle, Upload, FileUp, Zap, Trash2 } from "lucide-react";
 
 export default function Resumes() {
   const { user } = useAuth();
@@ -100,6 +100,24 @@ export default function Resumes() {
     });
   };
 
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+
+  const handleDeleteResume = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this resume?")) return;
+    setIsDeleting(id);
+    try {
+      await customFetch(`/api/resumes/${id}`, {
+        method: "DELETE",
+      });
+      refetch();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete resume");
+    } finally {
+      setIsDeleting(null);
+    }
+  };
+
   return (
     <div className="min-h-screen pt-24 pb-16 px-4">
       <div className="max-w-3xl mx-auto">
@@ -150,7 +168,12 @@ export default function Resumes() {
               id="file-upload"
               className="hidden"
               accept=".pdf,.docx,.doc,.txt"
-              onChange={(e) => e.target.files?.[0] && handleFileDrop(e.target.files[0])}
+              onChange={(e) => {
+                if (e.target.files?.[0]) {
+                  handleFileDrop(e.target.files[0]);
+                  e.target.value = "";
+                }
+              }}
             />
             <label
               htmlFor="file-upload"
@@ -193,6 +216,13 @@ export default function Resumes() {
                         className="px-4 py-1.5 rounded-lg bg-cyan-400/20 text-cyan-400 text-xs font-semibold hover:bg-cyan-400/30 transition-all flex items-center gap-1.5"
                       >
                         <Zap size={12} /> Analyze Score
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteResume(r.id)}
+                        disabled={isDeleting === r.id}
+                        className="px-4 py-1.5 rounded-lg bg-red-400/10 text-red-400 text-xs font-semibold hover:bg-red-400/20 transition-all flex items-center gap-1.5 disabled:opacity-50"
+                      >
+                        {isDeleting === r.id ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />} Delete
                       </button>
                     </div>
                   </div>
@@ -244,6 +274,11 @@ export default function Resumes() {
                     required
                     className="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50 text-sm transition-all" />
                 </div>
+                {uploadMutation.isError && (
+                  <div className="text-red-400 text-sm bg-red-400/10 border border-red-400/20 p-2.5 rounded-xl mt-2">
+                    Failed to save resume. Please try again.
+                  </div>
+                )}
                 <div className="flex gap-3 pt-2">
                   <button type="button" onClick={() => setShowForm(false)}
                     className="flex-1 py-2.5 rounded-xl text-gray-400 glass border border-white/10 text-sm">Cancel</button>
