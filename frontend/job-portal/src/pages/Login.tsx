@@ -57,8 +57,8 @@ export default function Login() {
               <Briefcase size={20} className="text-black" />
             </div>
             <span className="text-2xl font-bold">
-              <span className="text-cyan-400">Nexus</span>
-              <span className="text-purple-400">Jobs</span>
+              <span className="text-cyan-400">Hire</span>
+              <span className="text-purple-400">Sphere</span>
             </span>
           </div>
           <h1 className="text-2xl font-bold text-white">Welcome back</h1>

@@ -192,7 +192,7 @@ export default function Landing() {
               </div>
               <img 
                 src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=2426" 
-                alt="NexusJobs Dashboard Preview" 
+                alt="HireSphere Dashboard Preview" 
                 className="w-full h-auto mt-10 opacity-80"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>

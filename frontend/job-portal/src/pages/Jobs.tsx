@@ -45,7 +45,7 @@ export default function Jobs() {
             Find Your Next <span className="text-gradient-cyan text-glow-cyan">Adventure</span>
           </h1>
           <p className="text-gray-500 font-medium">
-            {jobs ? `${jobs.length} premium positions currently available` : "Scanning the nexus for opportunities..."}
+            {jobs ? `${jobs.length} premium positions currently available` : "Scanning the hiresphere network for opportunities..."}
           </p>
         </motion.div>
 

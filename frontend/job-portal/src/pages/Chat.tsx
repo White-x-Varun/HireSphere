@@ -83,10 +83,10 @@ const Chat: React.FC = () => {
         <CardHeader className="border-b border-white/10">
           <CardTitle className="flex items-center gap-3">
             <Avatar>
-              <AvatarFallback>NA</AvatarFallback>
+              <AvatarFallback>HA</AvatarFallback>
             </Avatar>
             <div>
-              <p className="text-sm font-medium">Nexus Assistant</p>
+              <p className="text-sm font-medium">HireSphere Assistant</p>
               <p className="text-xs text-muted-foreground">Direct Support Line</p>
             </div>
           </CardTitle>
@@ -116,7 +116,7 @@ const Chat: React.FC = () => {
               <div ref={scrollRef} />
               {(messages || []).length === 0 && (
                 <div className="text-center py-24 text-gray-500 italic">
-                  Start a conversation with Nexus assistant...
+                  Start a conversation with HireSphere assistant...
                 </div>
               )}
             </div>

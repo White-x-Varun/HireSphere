@@ -37,7 +37,7 @@ export default function LoadingScreen() {
         className="mt-10 text-center"
       >
         <span className="text-xl font-black tracking-tighter text-white">
-          NEXUS<span className="text-cyan-400">JOBS</span>
+          HIRE<span className="text-cyan-400">SPHERE</span>
         </span>
         <div className="mt-4 flex gap-1 justify-center">
           {[0, 1, 2].map((i) => (

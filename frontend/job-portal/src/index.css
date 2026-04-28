@@ -186,7 +186,7 @@
 }
 
 /* Glassmorphism utility */
-.glass {
+@utility glass {
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -194,7 +194,7 @@
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
 
-.glass-strong {
+@utility glass-strong {
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -202,40 +202,39 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
-.glass-card {
+@utility glass-card {
   @apply glass rounded-2xl transition-all duration-300;
-}
-
-.glass-card:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(0, 255, 255, 0.2);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 40px rgba(0, 255, 255, 0.05);
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 40px rgba(0, 255, 255, 0.05);
+  }
 }
 
 /* Neon glow effects */
-.glow-cyan {
+@utility glow-cyan {
   box-shadow: 0 0 15px rgba(0, 255, 255, 0.2), 0 0 30px rgba(0, 255, 255, 0.1);
 }
 
-.glow-purple {
+@utility glow-purple {
   box-shadow: 0 0 15px rgba(139, 92, 246, 0.2), 0 0 30px rgba(139, 92, 246, 0.1);
 }
 
-.text-gradient-cyan {
+@utility text-gradient-cyan {
   @apply bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500;
 }
 
-.text-gradient-purple {
+@utility text-gradient-purple {
   @apply bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500;
 }
 
-.text-glow-cyan {
+@utility text-glow-cyan {
   text-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
 }
 
 /* Mesh Gradient Background */
-.mesh-gradient {
+@utility mesh-gradient {
   background-color: #040712;
   background-image: 
     radial-gradient(at 0% 0%, hsla(189, 100%, 50%, 0.05) 0, transparent 50%), 
@@ -245,26 +244,25 @@
 }
 
 /* Gradient border */
-.gradient-border {
+@utility gradient-border {
   position: relative;
   border-radius: inherit;
-}
-
-.gradient-border::before {
-  content: "";
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(135deg, rgba(0, 255, 255, 0.5), rgba(139, 92, 246, 0.5));
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.5), rgba(139, 92, 246, 0.5));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
 }
 
 /* Animated grid background */
-.grid-bg {
+@utility grid-bg {
   background-image: 
     linear-gradient(rgba(0, 255, 255, 0.02) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 255, 255, 0.02) 1px, transparent 1px);
