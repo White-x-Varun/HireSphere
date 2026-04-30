@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import { useLocation } from "wouter";
 import { useSocket } from "@/contexts/SocketContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,7 +17,11 @@ const Chat: React.FC = () => {
   const queryClient = useQueryClient();
   const [newMessage, setNewMessage] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [activeRecipientId, setActiveRecipientId] = useState<string | null>(null);
+  const [location] = useLocation();
+  const searchParams = new URLSearchParams(location.split("?")[1]);
+  const recipientParam = searchParams.get("recipient");
+
+  const [activeRecipientId, setActiveRecipientId] = useState<string | null>(recipientParam);
 
   const { data: messages, isLoading } = useQuery({
     queryKey: [`/api/messages/${user?.id}`],
@@ -90,6 +95,19 @@ const Chat: React.FC = () => {
     }
   }, [conversations, activeRecipientId]);
 
+  // If a recipient is passed via URL but no conversation exists yet, we should add a dummy entry to the list
+  const displayConversations = useMemo(() => {
+    if (!recipientParam || conversations.find(c => c.id === recipientParam)) {
+      return conversations;
+    }
+    // Need to fetch user info for the recipient to show a proper name
+    // For now, we'll just add a placeholder if it's the first message
+    return [
+      { id: recipientParam, name: "New Contact", messages: [], lastMessage: { content: "Start a conversation", createdAt: new Date() } },
+      ...conversations
+    ];
+  }, [conversations, recipientParam]);
+
   const handleSendMessage = () => {
     if (!newMessage.trim() || !user || !activeRecipientId) return;
 
@@ -116,7 +134,7 @@ const Chat: React.FC = () => {
     );
   }
 
-  const activeConversation = conversations.find(c => c.id === activeRecipientId);
+  const activeConversation = displayConversations.find(c => c.id === activeRecipientId);
 
   return (
     <div className="container mx-auto py-8 h-[calc(100vh-100px)]">
@@ -137,7 +155,7 @@ const Chat: React.FC = () => {
               </div>
             ) : (
               <div className="p-2 space-y-1">
-                {conversations.map(conv => (
+                {displayConversations.map(conv => (
                   <button
                     key={conv.id}
                     onClick={() => setActiveRecipientId(conv.id)}

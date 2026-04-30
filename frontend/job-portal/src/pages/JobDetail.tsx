@@ -2,8 +2,9 @@ import { motion } from "framer-motion";
 import { Link, useParams } from "wouter";
 import { useGetJob, getGetJobQueryKey } from "@workspace/api-client-react";
 import { customFetch } from "@/lib/api";
-import { MapPin, IndianRupee, Clock, Users, ArrowLeft, Loader2, Building } from "lucide-react";
+import { MapPin, IndianRupee, Clock, Users, ArrowLeft, Loader2, Building, MessageSquare } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLocation } from "wouter";
 
 const typeLabels: Record<string, string> = {
   remote: "Remote",
@@ -15,6 +16,7 @@ const typeLabels: Record<string, string> = {
 export default function JobDetail() {
   const { id: jobId } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const [, setLocation] = useLocation();
 
   const { data: job, isLoading } = useGetJob(jobId, {
     query: {
@@ -71,15 +73,26 @@ export default function JobDetail() {
                 {typeLabels[job.type] ?? job.type}
               </span>
               {user && user.role !== "recruiter" && (
-                <Link href={`/apply/${job.id}`}>
+                <div className="flex flex-col gap-2">
+                  <Link href={`/apply/${job.id}`}>
+                    <motion.button
+                      whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(0,255,255,0.3)" }}
+                      whileTap={{ scale: 0.95 }}
+                      className="px-6 py-3 rounded-xl font-semibold text-black bg-gradient-to-r from-cyan-400 to-cyan-500 whitespace-nowrap"
+                    >
+                      Apply Now
+                    </motion.button>
+                  </Link>
                   <motion.button
-                    whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(0,255,255,0.3)" }}
+                    whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="px-6 py-3 rounded-xl font-semibold text-black bg-gradient-to-r from-cyan-400 to-cyan-500 whitespace-nowrap"
+                    onClick={() => setLocation(`/chat?recipient=${job.recruiterId?._id || job.recruiterId}`)}
+                    className="px-6 py-3 rounded-xl font-semibold text-white glass border border-white/20 flex items-center justify-center gap-2"
                   >
-                    Apply Now
+                    <MessageSquare size={16} />
+                    Message Recruiter
                   </motion.button>
-                </Link>
+                </div>
               )}
               {!user && (
                 <Link href="/login">

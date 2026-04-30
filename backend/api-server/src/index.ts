@@ -3,9 +3,11 @@ import http from "http";
 import app from "./app";
 import { logger } from "./lib/logger";
 import { initSocket } from "./lib/socket";
+import { initCron } from "./lib/cron";
 
 const server = http.createServer(app);
 initSocket(server);
+initCron();
 
 const rawPort = process.env["PORT"];
 // ... rest of port logic ...

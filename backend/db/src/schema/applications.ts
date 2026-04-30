@@ -17,7 +17,7 @@ const ApplicationSchema: Schema = new Schema(
     jobId: { type: Schema.Types.ObjectId, ref: "Job", required: true },
     status: {
       type: String,
-      enum: ["pending", "reviewing", "shortlisted", "rejected", "accepted"],
+      enum: ["pending", "reviewing", "shortlisted", "interviewing", "rejected", "accepted"],
       default: "pending",
     },
     coverLetter: { type: String },
@@ -38,7 +38,7 @@ export const Application = mongoose.models.Application || mongoose.model<Applica
 export const insertApplicationSchema = z.object({
   userId: z.string(),
   jobId: z.string(),
-  status: z.enum(["pending", "reviewing", "shortlisted", "rejected", "accepted"]).default("pending"),
+  status: z.enum(["pending", "reviewing", "shortlisted", "interviewing", "rejected", "accepted"]).default("pending"),
   coverLetter: z.string().optional(),
   resumeId: z.string().optional(),
 });

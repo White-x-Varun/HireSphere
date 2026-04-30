@@ -10,6 +10,7 @@ export interface Interview extends Document {
   meetingLink?: string;
   location?: string;
   notes?: string;
+  reminderSent: boolean;
 }
 
 const InterviewSchema: Schema = new Schema(
@@ -23,6 +24,7 @@ const InterviewSchema: Schema = new Schema(
     meetingLink: { type: String },
     location: { type: String },
     notes: { type: String },
+    reminderSent: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

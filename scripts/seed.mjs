@@ -9,10 +9,14 @@ async function seed() {
     await mongoose.connect(MONGODB_URI);
     console.log("Connected to MongoDB for seeding");
 
-    const collections = ["users", "jobs", "resumes", "atsscores"];
+    const collections = ["users", "jobs", "resumes", "atsscores", "applications", "interviews", "notifications", "messages"];
     for (const coll of collections) {
-      await mongoose.connection.db.collection(coll).deleteMany({});
-      console.log(`Cleared collection: ${coll}`);
+      try {
+        await mongoose.connection.db.collection(coll).deleteMany({});
+        console.log(`Cleared collection: ${coll}`);
+      } catch (e) {
+        console.log(`Collection ${coll} might not exist yet, skipping clear.`);
+      }
     }
 
     // Helper to generate hash manually
@@ -27,11 +31,12 @@ async function seed() {
     // 1. Users
     const seekerId = new mongoose.Types.ObjectId();
     const recruiterId = new mongoose.Types.ObjectId();
+    const adminId = new mongoose.Types.ObjectId();
 
     await mongoose.connection.db.collection("users").insertMany([
       {
         _id: seekerId,
-        name: "John Seeker",
+        name: "Arjun Sharma",
         email: "seeker@demo.com",
         passwordHash,
         role: "job_seeker",
@@ -40,53 +45,88 @@ async function seed() {
       },
       {
         _id: recruiterId,
-        name: "Jane Recruiter",
+        name: "Priya Iyer",
         email: "recruiter@demo.com",
         passwordHash,
         role: "recruiter",
         createdAt: new Date(),
         updatedAt: new Date()
+      },
+      {
+        _id: adminId,
+        name: "HireSphere Admin",
+        email: "admin@demo.com",
+        passwordHash,
+        role: "admin",
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     ]);
-    console.log("Inserted users");
+    console.log("Inserted Indian users (Arjun, Priya, Admin)");
 
     // 2. Jobs
     const jobs = [
       {
-        title: "Senior Full Stack Engineer",
-        company: "Nexus Tech India",
+        title: "Senior SDE - Backend",
+        company: "Zomato",
+        location: "Gurgaon, HR",
+        type: "full_time",
+        skills: ["Node.js", "TypeScript", "Redis", "Kafka", "Go"],
+        description: "Scale our delivery infrastructure to millions of requests. Looking for high-performance engineers.",
+        salaryMin: 2500000,
+        salaryMax: 4500000,
+        recruiterId: recruiterId,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        title: "Full Stack Developer",
+        company: "Paytm",
+        location: "Noida, UP",
+        type: "full_time",
+        skills: ["React", "Java", "Spring Boot", "Microservices"],
+        description: "Join the core payments team to build the future of digital finance in India.",
+        salaryMin: 1500000,
+        salaryMax: 2800000,
+        recruiterId: recruiterId,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        title: "Frontend Engineer (React)",
+        company: "Flipkart",
         location: "Bangalore, KA",
         type: "full_time",
-        skills: ["React", "Node.js", "TypeScript", "MongoDB", "AWS"],
-        description: "We are looking for a Senior Full Stack Engineer to lead our core product development in Bangalore. Experience with React and Node.js is essential.",
+        skills: ["React", "Next.js", "Tailwind CSS", "Redux"],
+        description: "Build the most seamless e-commerce experience for over 100 million users.",
         salaryMin: 1800000,
+        salaryMax: 3200000,
+        recruiterId: recruiterId,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        title: "DevOps Architect",
+        company: "TCS",
+        location: "Pune, MH",
+        type: "full_time",
+        skills: ["AWS", "Kubernetes", "Terraform", "CI/CD"],
+        description: "Design enterprise-grade cloud infrastructure for global digital transformation.",
+        salaryMin: 2000000,
         salaryMax: 3500000,
         recruiterId: recruiterId,
         createdAt: new Date(),
         updatedAt: new Date()
       },
       {
-        title: "Frontend Developer",
-        company: "Pixel Perfect Designs",
-        location: "Mumbai, MH",
-        type: "full_time",
-        skills: ["React", "Tailwind CSS", "Framer Motion"],
-        description: "Join our UI team in Mumbai to build stunning web interfaces. High proficiency in CSS and React required.",
-        salaryMin: 800000,
-        salaryMax: 1500000,
-        recruiterId: recruiterId,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        title: "Backend Specialist",
-        company: "DataFlow India",
-        location: "Gurgaon, HR",
-        type: "contract",
-        skills: ["Node.js", "PostgreSQL", "Docker", "Redis"],
-        description: "Build scalable microservices for our data processing pipeline in Gurgaon.",
+        title: "UI/UX Designer",
+        company: "Swiggy",
+        location: "Hyderabad, TS",
+        type: "remote",
+        skills: ["Figma", "Adobe XD", "Prototyping", "User Research"],
+        description: "Design delightful food ordering experiences for our hungry customers across India.",
         salaryMin: 1200000,
-        salaryMax: 2000000,
+        salaryMax: 2200000,
         recruiterId: recruiterId,
         createdAt: new Date(),
         updatedAt: new Date()
@@ -95,36 +135,48 @@ async function seed() {
 
     const insertedJobs = await mongoose.connection.db.collection("jobs").insertMany(jobs);
     const jobId = insertedJobs.insertedIds[0];
-    console.log("Inserted jobs");
+    console.log("Inserted 5 Indian tech jobs");
 
     // 3. Resumes
     const resumeId = new mongoose.Types.ObjectId();
     await mongoose.connection.db.collection("resumes").insertOne({
       _id: resumeId,
       userId: seekerId,
-      fileName: "John_Doe_Developer.pdf",
-      extractedText: "John Doe is a Senior Developer with 10 years of experience in React, Node.js, and Cloud Computing. Expert in AWS and TypeScript.",
-      skills: ["React", "Node.js", "TypeScript", "AWS"],
+      fileName: "Arjun_Sharma_SDE.pdf",
+      extractedText: "Arjun Sharma is a Backend Specialist with 5 years of experience at top Indian startups. Expert in Node.js, TypeScript, and Redis. Previously at OLA and Swiggy.",
+      skills: ["Node.js", "TypeScript", "Redis", "Kafka"],
       createdAt: new Date(),
       updatedAt: new Date()
     });
-    console.log("Inserted resume");
+    console.log("Inserted Indian seeker resume");
 
     // 4. ATS Scores
     await mongoose.connection.db.collection("atsscores").insertOne({
       resumeId: resumeId,
       jobId: jobId,
-      score: 85,
-      matchedKeywords: ["React", "Node.js", "TypeScript", "AWS"],
-      missingKeywords: ["MongoDB"],
+      score: 92,
+      matchedKeywords: ["Node.js", "TypeScript", "Redis", "Kafka"],
+      missingKeywords: ["Go"],
       totalKeywords: 5,
-      jobTitle: "Senior Full Stack Engineer",
+      jobTitle: "Senior SDE - Backend",
       createdAt: new Date(),
       updatedAt: new Date()
     });
     console.log("Inserted ATS score");
 
-    console.log("Comprehensive seeding complete");
+    // 5. Sample Application
+    await mongoose.connection.db.collection("applications").insertOne({
+      userId: seekerId,
+      jobId: jobId,
+      status: "shortlisted",
+      coverLetter: "I have extensive experience scaling backend systems at OLA and would love to bring my expertise to Zomato.",
+      resumeId: resumeId,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+    console.log("Inserted sample application");
+
+    console.log("Comprehensive Indian-format seeding complete");
     process.exit(0);
   } catch (err) {
     console.error("Seeding failed:", err);

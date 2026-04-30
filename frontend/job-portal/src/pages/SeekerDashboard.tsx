@@ -14,6 +14,7 @@ const statusConfig: Record<string, { label: string; color: string; icon: any }> 
   pending: { label: "Pending", color: "text-amber-400", icon: Clock },
   reviewing: { label: "Reviewing", color: "text-blue-400", icon: Target },
   shortlisted: { label: "Shortlisted", color: "text-emerald-400", icon: CheckCircle },
+  interviewing: { label: "Interviewing", color: "text-purple-400", icon: Clock },
   rejected: { label: "Rejected", color: "text-red-400", icon: XCircle },
   accepted: { label: "Accepted", color: "text-cyan-400", icon: CheckCircle },
 };
@@ -52,8 +53,8 @@ export default function SeekerDashboard() {
 
   const stats = [
     { label: "Total Applications", value: dashboard?.totalApplications ?? 0, icon: Briefcase, color: "text-cyan-400", bg: "bg-cyan-400/10" },
+    { label: "Interviewing", value: dashboard?.interviewing ?? 0, icon: Clock, color: "text-purple-400", bg: "bg-purple-400/10" },
     { label: "Shortlisted", value: dashboard?.shortlisted ?? 0, icon: CheckCircle, color: "text-emerald-400", bg: "bg-emerald-400/10" },
-    { label: "Rejected", value: dashboard?.rejected ?? 0, icon: XCircle, color: "text-red-400", bg: "bg-red-400/10" },
     { label: "Avg ATS Score", value: `${dashboard?.avgAtsScore ?? 0}%`, icon: TrendingUp, color: "text-purple-400", bg: "bg-purple-400/10" },
   ];
 
@@ -192,6 +193,65 @@ export default function SeekerDashboard() {
             )}
           </motion.div>
         </div>
+
+        {/* Upcoming Interviews */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="mt-6 glass rounded-2xl p-6 border border-white/8"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-white">Upcoming Interviews</h2>
+            <Clock size={18} className="text-purple-400" />
+          </div>
+          {dashboard?.upcomingInterviews && dashboard.upcomingInterviews.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {dashboard.upcomingInterviews.map((interview: any) => (
+                <div key={interview.id} className="p-4 rounded-xl bg-white/3 border border-white/5 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="text-sm text-white font-medium">{interview.jobTitle}</div>
+                      <div className="text-xs text-gray-500">{interview.company}</div>
+                    </div>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 font-medium">
+                      {interview.type}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-gray-400">
+                    <Clock size={14} className="text-cyan-400" />
+                    {new Date(interview.scheduledAt).toLocaleString()}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {interview.meetingLink && (
+                      <a
+                        href={interview.meetingLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center py-2 rounded-lg bg-cyan-500/10 text-cyan-400 text-[10px] font-medium hover:bg-cyan-500/20 transition-colors"
+                      >
+                        Join Meeting
+                      </a>
+                    )}
+                    <a
+                      href={`https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`Interview: ${interview.jobTitle}`)}&details=${encodeURIComponent(`Interview with ${interview.company} via HireSphere`)}&dates=${new Date(interview.scheduledAt).toISOString().replace(/-|:|\.\d\d\d/g, "")}/${new Date(new Date(interview.scheduledAt).getTime() + 60 * 60 * 1000).toISOString().replace(/-|:|\.\d\d\d/g, "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center py-2 rounded-lg bg-white/5 text-gray-300 text-[10px] font-medium hover:bg-white/10 transition-colors"
+                    >
+                      Add to Calendar
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <Clock size={32} className="text-gray-600 mx-auto mb-2" />
+              <p className="text-gray-500 text-sm">No interviews scheduled yet</p>
+            </div>
+          )}
+        </motion.div>
 
         {/* Quick Actions */}
         <motion.div
