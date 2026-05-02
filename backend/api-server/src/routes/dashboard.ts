@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import mongoose from "mongoose";
 import { Application, Job, User, Resume, AtsScore, Interview } from "@workspace/db";
 import { requireAuth } from "../middlewares/auth";
 
@@ -146,6 +147,10 @@ router.get("/dashboard/recruiter", requireAuth, async (req, res, next): Promise<
 
 router.get("/dashboard/stats", async (req, res, next): Promise<void> => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      res.status(503).json({ error: "Database not connected. Please ensure MongoDB is running." });
+      return;
+    }
     const [jobCount, userCount, appCount, resumeCount] = await Promise.all([
       Job.countDocuments(),
       User.countDocuments(),

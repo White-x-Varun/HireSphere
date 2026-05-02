@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import mongoose from "mongoose";
 import { User } from "@workspace/db";
 import { RegisterUserBody, LoginUserBody } from "@workspace/api-zod";
 import { hashPassword, verifyPassword, signToken } from "../lib/auth";
@@ -36,6 +37,10 @@ router.post("/auth/register", async (req, res, next): Promise<void> => {
 
 router.post("/auth/login", async (req, res, next): Promise<void> => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      res.status(503).json({ error: "Database not connected. Please ensure MongoDB is running." });
+      return;
+    }
     const parsed = LoginUserBody.safeParse(req.body);
     if (!parsed.success) {
       res.status(400).json({ error: parsed.error.message });

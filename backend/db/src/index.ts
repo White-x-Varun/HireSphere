@@ -8,10 +8,19 @@ if (!process.env.MONGODB_URI) {
   );
 }
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI).catch((err) => {
-  console.error("MongoDB connection error:", err);
-});
+// Connect to MongoDB with retries
+const connectWithRetry = () => {
+  console.log("Attempting MongoDB connection...");
+  mongoose.connect(process.env.MONGODB_URI!).then(() => {
+    console.log("Successfully connected to MongoDB");
+  }).catch((err) => {
+    console.error("MongoDB connection error:", err.message);
+    console.log("Retrying in 5 seconds...");
+    setTimeout(connectWithRetry, 5000);
+  });
+};
+
+connectWithRetry();
 
 export const db = mongoose.connection;
 

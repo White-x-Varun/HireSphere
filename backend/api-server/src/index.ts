@@ -16,6 +16,6 @@ if (!rawPort) {
 }
 const port = Number(rawPort);
 
-server.listen(port, "0.0.0.0", () => {
+server.listen(port, () => {
   logger.info({ port }, "Server listening with Socket.io");
 });
